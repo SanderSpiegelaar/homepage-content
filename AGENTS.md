@@ -15,6 +15,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 # Project Tooling
 
 - Use Oxlint via `bun run lint` and Oxfmt via `bun run format`; do not add ESLint or Prettier configuration.
+- After implementing changes, agents must run `bun run fallow` and resolve any issues introduced by their changes.
 
 # Orca CLI and multi-agent work
 
