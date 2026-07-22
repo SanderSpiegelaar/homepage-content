@@ -32,6 +32,7 @@ import {
   type ExaResearchRun,
 } from "@/lib/research/runs"
 import type { ResearchWebsite } from "@/lib/research/schema"
+import { reconcileResearchRuns } from "@/lib/research/status"
 
 const dateTime = new Intl.DateTimeFormat("en", {
   dateStyle: "medium",
@@ -205,7 +206,11 @@ export default async function ExaResearchDetailsPage({
   const record = await getResearchRun(session.user.id, id)
   if (!record) notFound()
 
-  const { run, result } = record
+  await reconcileResearchRuns(session.user.id, [record.run])
+  const refreshedRecord = await getResearchRun(session.user.id, id)
+  if (!refreshedRecord) notFound()
+
+  const { run, result } = refreshedRecord
 
   return (
     <div className="flex w-full max-w-7xl flex-col gap-6">

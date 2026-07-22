@@ -9,6 +9,7 @@ import {
   claimResearchRun,
   completeResearchRun,
   createResearchRun,
+  deleteResearchRun,
   failResearchRun,
 } from "@/lib/research/runs"
 import {
@@ -44,5 +45,13 @@ export async function startResearch(id: string): Promise<void> {
     complete: completeResearchRun,
     fail: failResearchRun,
   })
+  revalidatePath("/exa-research")
+}
+
+export async function deleteResearch(id: string): Promise<void> {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session) return
+
+  await deleteResearchRun(session.user.id, id)
   revalidatePath("/exa-research")
 }

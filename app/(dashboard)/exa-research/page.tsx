@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/table"
 import { auth } from "@/lib/auth/auth"
 import { listResearchRuns } from "@/lib/research/runs"
+import { reconcileResearchRuns } from "@/lib/research/status"
 
 const dateTime = new Intl.DateTimeFormat("en", {
   dateStyle: "medium",
@@ -50,6 +51,8 @@ export default async function ExaResearchPage() {
   if (!session) redirect("/sign-in")
 
   const runs = await listResearchRuns(session.user.id)
+  await reconcileResearchRuns(session.user.id, runs)
+  const refreshedRuns = await listResearchRuns(session.user.id)
 
   return (
     <div className="flex w-full max-w-6xl flex-col gap-6">
@@ -70,7 +73,7 @@ export default async function ExaResearchPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {runs.length === 0 ? (
+          {refreshedRuns.length === 0 ? (
             <Empty className="min-h-48 border">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
@@ -95,7 +98,7 @@ export default async function ExaResearchPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {runs.map((run) => (
+                {refreshedRuns.map((run) => (
                   <TableRow key={run.id}>
                     <TableCell className="font-medium">
                       <Link

@@ -9,6 +9,7 @@ const claimResearchRun = mock(
     ({ id, keyword: "edge AI" }) as { id: string; keyword: string } | undefined
 )
 const completeResearchRun = mock(async () => {})
+const deleteResearchRun = mock(async () => {})
 const failResearchRun = mock(async () => {})
 const dispatchResearchRequest = mock(async () => "execution-1")
 
@@ -20,10 +21,11 @@ mock.module("@/lib/research/runs", () => ({
   claimResearchRun,
   completeResearchRun,
   createResearchRun,
+  deleteResearchRun,
   failResearchRun,
 }))
 
-const { startResearch, submitResearch } =
+const { deleteResearch, startResearch, submitResearch } =
   await import("../../app/(dashboard)/actions")
 const idle = { status: "idle" } as const
 
@@ -40,6 +42,7 @@ beforeEach(() => {
     createResearchRun,
     claimResearchRun,
     completeResearchRun,
+    deleteResearchRun,
     failResearchRun,
     dispatchResearchRequest,
   ])
@@ -60,6 +63,7 @@ test("authorization and validation prevent persistence and dispatch", async () =
     message: "Sign in to create a research run.",
   })
   await startResearch("run-1")
+  await deleteResearch("run-1")
 
   session = { user: { id: "user-1" } }
   for (const keyword of ["   ", "x".repeat(101)]) {
@@ -70,6 +74,7 @@ test("authorization and validation prevent persistence and dispatch", async () =
 
   expect(createResearchRun).not.toHaveBeenCalled()
   expect(claimResearchRun).not.toHaveBeenCalled()
+  expect(deleteResearchRun).not.toHaveBeenCalled()
   expect(dispatchResearchRequest).not.toHaveBeenCalled()
 })
 
@@ -83,6 +88,13 @@ test("creation stores a trimmed pending run without dispatching", async () => {
     status: "success",
     message: "Research run created.",
   })
+})
+
+test("delete scopes the mutation to the authenticated owner", async () => {
+  await deleteResearch("run-1")
+
+  expect(deleteResearchRun).toHaveBeenCalledWith("user-1", "run-1")
+  expect(revalidatePath).toHaveBeenCalledWith("/exa-research")
 })
 
 test("start scopes the claim to the owner and persists the execution id", async () => {

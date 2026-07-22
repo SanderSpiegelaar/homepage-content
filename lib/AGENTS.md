@@ -11,6 +11,7 @@ Own server and client domain logic shared by routes and components.
 - `email` owns transactional email behavior.
 - `research` owns research validation, persistence, lifecycle, and n8n dispatch.
 - `logger.ts` owns server-only structured logging, development formatting, and redaction.
+- `n8n.ts` owns the stage-agnostic, server-only n8n execution status boundary and normalized execution states.
 - `utils.ts` owns shared presentation utilities.
 
 ## Local Contracts
@@ -20,6 +21,7 @@ Own server and client domain logic shared by routes and components.
 - Do not add provider-specific AI or search SDKs; workflow execution belongs to n8n.
 - Detailed integration request and response records are development-only and must redact credential-shaped fields.
 - Adopt Effect only for intentionally migrated server workflows; keep expected failures typed internally and retain Promise adapters for existing Promise-based callers.
+- Read n8n execution status only through the authenticated server boundary; runtime-validate responses and never expose API credentials or raw responses.
 
 ## Work Guidance
 

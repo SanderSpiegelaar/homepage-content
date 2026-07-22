@@ -14,9 +14,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Project Tooling
 
+- Use Bun as the package manager and application runtime; `nixpacks.toml` must not install Node.js.
 - Use Oxlint via `bun run lint` and Oxfmt via `bun run format`; do not add ESLint or Prettier configuration.
 - After implementing changes, agents must run `bun run fallow` and resolve any issues introduced by their changes.
-- `bun run prepare` bootstraps the ignored local Effect source checkout at `.repos/effect` when it is missing.
+- `bun run prepare` bootstraps the ignored local Effect source checkout at `.repos/effect` when it is missing; CI skips this agent-only checkout.
 
 # Orca CLI and multi-agent work
 

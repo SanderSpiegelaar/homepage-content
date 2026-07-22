@@ -1,4 +1,4 @@
-import { expect, mock, test } from "bun:test"
+import { beforeEach, expect, mock, test } from "bun:test"
 
 const getSession = mock(async () => ({ user: { id: "user-1" } }))
 const notFound = mock(() => {
@@ -36,19 +36,30 @@ const record = {
 const getResearchRun = mock(
   async (): Promise<typeof record | undefined> => record
 )
+const reconcileResearchRuns = mock(async () => {})
 
 mock.module("next/headers", () => ({ headers: async () => new Headers() }))
 mock.module("next/navigation", () => ({ notFound, redirect }))
 mock.module("@/lib/auth/auth", () => ({ auth: { api: { getSession } } }))
 mock.module("@/lib/research/runs", () => ({ getResearchRun }))
+mock.module("@/lib/research/status", () => ({ reconcileResearchRuns }))
 
 const { default: ExaResearchDetailsPage, ResearchResultsTable } =
   await import("./page")
 
-test("loads details through the authenticated owner's scope", async () => {
+beforeEach(() => {
+  getResearchRun.mockClear()
+  reconcileResearchRuns.mockClear()
+  notFound.mockClear()
+  getResearchRun.mockImplementation(async () => record)
+})
+
+test("reconciles the owned run and reloads details before rendering", async () => {
   await ExaResearchDetailsPage({ params: Promise.resolve({ id: "run-1" }) })
 
+  expect(getResearchRun).toHaveBeenCalledTimes(2)
   expect(getResearchRun).toHaveBeenCalledWith("user-1", "run-1")
+  expect(reconcileResearchRuns).toHaveBeenCalledWith("user-1", [record.run])
 })
 
 test("uses the same not-found path for an unavailable scoped run", async () => {

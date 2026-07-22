@@ -17,6 +17,7 @@ Own the Next.js App Router layouts, pages, route handlers, and Server Actions.
 - Authenticate and authorize inside every Server Action and protected page.
 - Keep provider and webhook details server-side.
 - Require the server-configured bearer secret before reading or persisting an n8n result callback.
+- Reconcile eligible owned Exa runs server-side before rendering refreshed list or detail data; status lookup failures must not block the page.
 - Read the installed Next.js guide under `node_modules/next/dist/docs/` before changing framework APIs.
 
 ## Work Guidance

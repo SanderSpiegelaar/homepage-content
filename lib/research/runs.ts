@@ -1,6 +1,6 @@
 import "server-only"
 
-import { and, desc, eq, inArray } from "drizzle-orm"
+import { and, desc, eq, inArray, ne } from "drizzle-orm"
 
 import {
   exaResearchResult,
@@ -8,6 +8,7 @@ import {
   type ResearchWebsite,
 } from "@/lib/research/schema"
 import { db } from "@/lib/db"
+import type { StageExecutionStatus } from "@/lib/n8n"
 
 export type ExaResearchRun = typeof exaResearchRun.$inferSelect
 export type ExaResearchResult = typeof exaResearchResult.$inferSelect
@@ -26,6 +27,12 @@ export function listResearchRuns(userId: string) {
     .from(exaResearchRun)
     .where(eq(exaResearchRun.userId, userId))
     .orderBy(desc(exaResearchRun.createdAt))
+}
+
+export function deleteResearchRun(userId: string, id: string) {
+  return db
+    .delete(exaResearchRun)
+    .where(and(eq(exaResearchRun.id, id), eq(exaResearchRun.userId, userId)))
 }
 
 export async function getResearchRun(userId: string, id: string) {
@@ -72,7 +79,13 @@ export function storeResearchResult(
 export async function claimResearchRun(userId: string, id: string) {
   const [run] = await db
     .update(exaResearchRun)
-    .set({ status: "starting", error: null, updatedAt: new Date() })
+    .set({
+      status: "starting",
+      executionId: null,
+      error: null,
+      startedAt: null,
+      updatedAt: new Date(),
+    })
     .where(
       and(
         eq(exaResearchRun.id, id),
@@ -121,6 +134,33 @@ export async function failResearchRun(userId: string, id: string) {
         eq(exaResearchRun.id, id),
         eq(exaResearchRun.userId, userId),
         eq(exaResearchRun.status, "starting")
+      )
+    )
+}
+
+export function reconcileResearchRunStatus(
+  userId: string,
+  id: string,
+  executionId: string,
+  status: Exclude<StageExecutionStatus, "running">
+) {
+  return db
+    .update(exaResearchRun)
+    .set(
+      status === "succeeded"
+        ? { status: "completed", error: null, updatedAt: new Date() }
+        : {
+            status: "failed",
+            error: "Research execution failed. Try again.",
+            updatedAt: new Date(),
+          }
+    )
+    .where(
+      and(
+        eq(exaResearchRun.id, id),
+        eq(exaResearchRun.userId, userId),
+        eq(exaResearchRun.executionId, executionId),
+        ne(exaResearchRun.status, "completed")
       )
     )
 }

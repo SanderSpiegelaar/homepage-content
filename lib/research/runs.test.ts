@@ -8,6 +8,11 @@ const insertValues = mock(() => ({
   }),
 }))
 const updateSet = mock(() => ({ where: async () => {} }))
+const reconcileUpdateWhere = mock(() => ({
+  returning: async () => [{ id: "run-1", keyword: "topic" }],
+}))
+const reconcileUpdateSet = mock(() => ({ where: reconcileUpdateWhere }))
+const deleteWhere = mock(async () => {})
 
 const fakeTransaction = {
   select: () => ({
@@ -26,8 +31,19 @@ const transaction = mock(
 )
 
 mock.module("server-only", () => ({}))
-mock.module("@/lib/db", () => ({ db: { transaction } }))
-const { storeResearchResult } = await import("./runs")
+mock.module("@/lib/db", () => ({
+  db: {
+    delete: () => ({ where: deleteWhere }),
+    transaction,
+    update: () => ({ set: reconcileUpdateSet }),
+  },
+}))
+const {
+  claimResearchRun,
+  deleteResearchRun,
+  reconcileResearchRunStatus,
+  storeResearchResult,
+} = await import("./runs")
 
 const data = [
   {
@@ -49,6 +65,49 @@ beforeEach(() => {
   transaction.mockClear()
   insertValues.mockClear()
   updateSet.mockClear()
+  reconcileUpdateSet.mockClear()
+  reconcileUpdateWhere.mockClear()
+  deleteWhere.mockClear()
+})
+
+test("deletes a run with one owner-scoped statement", async () => {
+  await deleteResearchRun("user-1", "run-1")
+
+  expect(deleteWhere).toHaveBeenCalledTimes(1)
+})
+
+test("clears a stale execution before retry dispatch", async () => {
+  await claimResearchRun("user-1", "run-1")
+
+  expect(reconcileUpdateSet).toHaveBeenCalledWith(
+    expect.objectContaining({
+      status: "starting",
+      executionId: null,
+      startedAt: null,
+    })
+  )
+})
+
+test("conditionally reconciles an owned current execution", async () => {
+  await reconcileResearchRunStatus(
+    "user-1",
+    "run-1",
+    "execution-1",
+    "succeeded"
+  )
+  expect(reconcileUpdateSet).toHaveBeenCalledWith(
+    expect.objectContaining({ status: "completed", error: null })
+  )
+  expect(reconcileUpdateWhere).toHaveBeenCalledTimes(1)
+
+  reconcileUpdateSet.mockClear()
+  await reconcileResearchRunStatus("user-1", "run-1", "execution-1", "failed")
+  expect(reconcileUpdateSet).toHaveBeenCalledWith(
+    expect.objectContaining({
+      status: "failed",
+      error: "Research execution failed. Try again.",
+    })
+  )
 })
 
 test("stores and completes a run inside one transaction", async () => {

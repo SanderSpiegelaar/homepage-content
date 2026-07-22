@@ -39,3 +39,5 @@ next-env.d.ts
 .pi-subagents
 .fallow/
 .repos
+
+graphify-out/
