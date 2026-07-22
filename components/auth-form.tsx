@@ -14,8 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { authClient } from "@/lib/auth-client"
 
 export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
@@ -62,58 +62,67 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         </CardDescription>
       </CardHeader>
       <form onSubmit={submit}>
-        <CardContent className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          {isSignUp && (
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" name="name" autoComplete="name" required />
-            </div>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete={isSignUp ? "new-password" : "current-password"}
-              minLength={8}
-              required
-            />
-          </div>
-          <Button className="w-full" type="submit" disabled={pending}>
-            {pending
-              ? isSignUp
-                ? "Creating account…"
-                : "Signing in…"
-              : isSignUp
-                ? "Sign up"
-                : "Sign in"}
-          </Button>
+        <CardContent>
+          <FieldGroup>
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            {isSignUp && (
+              <Field>
+                <FieldLabel htmlFor="name">Name</FieldLabel>
+                <Input id="name" name="name" autoComplete="name" required />
+              </Field>
+            )}
+            <Field>
+              <FieldLabel htmlFor="email">Email</FieldLabel>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="password">Password</FieldLabel>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete={isSignUp ? "new-password" : "current-password"}
+                minLength={8}
+                required
+              />
+            </Field>
+            <Button className="w-full" type="submit" disabled={pending}>
+              {pending
+                ? isSignUp
+                  ? "Creating account…"
+                  : "Signing in…"
+                : isSignUp
+                  ? "Sign up"
+                  : "Sign in"}
+            </Button>
+          </FieldGroup>
         </CardContent>
       </form>
-      <CardFooter className="justify-center text-sm text-muted-foreground">
-        {isSignUp ? "Already have an account?" : "Need an account?"}
-        <Button
-          render={<Link href={isSignUp ? "/sign-in" : "/sign-up"} />}
-          variant="link"
-        >
-          {isSignUp ? "Sign in" : "Sign up"}
-        </Button>
+      <CardFooter className="flex-col justify-center gap-1 text-sm text-muted-foreground">
+        {!isSignUp && (
+          <Button render={<Link href="/forgot-password" />} variant="link">
+            Forgot password?
+          </Button>
+        )}
+        <p>
+          {isSignUp ? "Already have an account?" : "Need an account?"}
+          <Button
+            render={<Link href={isSignUp ? "/sign-in" : "/sign-up"} />}
+            variant="link"
+          >
+            {isSignUp ? "Sign in" : "Sign up"}
+          </Button>
+        </p>
       </CardFooter>
     </Card>
   )

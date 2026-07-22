@@ -1,6 +1,6 @@
 "use client"
 
-import { HouseIcon } from "@phosphor-icons/react"
+import { HouseIcon, UserCircleIcon } from "@phosphor-icons/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -17,7 +17,10 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
-const navigation = [{ title: "Dashboard", href: "/", icon: HouseIcon }]
+const navigation = [
+  { title: "Dashboard", href: "/", icon: HouseIcon },
+  { title: "Account", href: "/account", icon: UserCircleIcon },
+]
 
 export function AppSidebar() {
   const pathname = usePathname()

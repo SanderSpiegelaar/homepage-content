@@ -13,15 +13,16 @@ after(() => {
 
 describe("searchSerper", () => {
   it("sends typed searches with an explicit API key", async () => {
-    let sentRequest: { input: RequestInfo | URL; init?: RequestInit } | undefined
-    const fetcher: typeof fetch = async (input, init) => {
+    let sentRequest:
+      { input: RequestInfo | URL; init?: RequestInit } | undefined
+    const fetcher = async (input: RequestInfo | URL, init?: RequestInit) => {
       sentRequest = { input, init }
       return Response.json({ searchParameters: { q: "nextjs" } })
     }
 
     const result = await searchSerper(
       { q: "nextjs", gl: "us", num: 5 },
-      { apiKey: "explicit-key", fetch: fetcher },
+      { apiKey: "explicit-key", fetch: fetcher }
     )
 
     assert.ok(sentRequest)
@@ -29,15 +30,15 @@ describe("searchSerper", () => {
     assert.equal(sentRequest.init?.method, "POST")
     assert.equal(
       new Headers(sentRequest.init?.headers).get("X-API-KEY"),
-      "explicit-key",
+      "explicit-key"
     )
     assert.equal(
       new Headers(sentRequest.init?.headers).get("Content-Type"),
-      "application/json",
+      "application/json"
     )
     assert.equal(
       sentRequest.init?.body,
-      JSON.stringify({ q: "nextjs", gl: "us", num: 5 }),
+      JSON.stringify({ q: "nextjs", gl: "us", num: 5 })
     )
     assert.equal(result.searchParameters?.q, "nextjs")
     assert.equal(result.organic, undefined)
@@ -46,7 +47,7 @@ describe("searchSerper", () => {
   it("uses SERPER_API_KEY when no explicit key is provided", async () => {
     process.env.SERPER_API_KEY = "environment-key"
     let sentKey: string | null = null
-    const fetcher: typeof fetch = async (_input, init) => {
+    const fetcher = async (_input: RequestInfo | URL, init?: RequestInit) => {
       sentKey = new Headers(init?.headers).get("X-API-KEY")
       return Response.json({})
     }
@@ -58,55 +59,52 @@ describe("searchSerper", () => {
 
   it("fails before fetching when configuration is missing", async () => {
     let called = false
-    const fetcher: typeof fetch = async () => {
+    const fetcher = async () => {
       called = true
       return Response.json({})
     }
 
     await assert.rejects(
       searchSerper({ q: "nextjs" }, { fetch: fetcher }),
-      /SERPER_API_KEY is required/,
+      /SERPER_API_KEY is required/
     )
     assert.equal(called, false)
   })
 
   it("throws a safe SerperError for provider failures", async () => {
-    const fetcher: typeof fetch = async () =>
+    const fetcher = async () =>
       new Response("invalid key secret-key", { status: 401 })
 
     await assert.rejects(
-      searchSerper(
-        { q: "nextjs" },
-        { apiKey: "secret-key", fetch: fetcher },
-      ),
+      searchSerper({ q: "nextjs" }, { apiKey: "secret-key", fetch: fetcher }),
       (error: unknown) => {
         assert.ok(error instanceof SerperError)
         assert.equal(error.status, 401)
         assert.equal(error.details, "invalid key [redacted]")
         assert.equal(error.message.includes("secret-key"), false)
         return true
-      },
+      }
     )
   })
 
   it("rejects successful non-object payloads", async () => {
-    const fetcher: typeof fetch = async () => Response.json([])
+    const fetcher = async () => Response.json([])
 
     await assert.rejects(
       searchSerper({ q: "nextjs" }, { apiKey: "key", fetch: fetcher }),
-      /Serper returned a malformed response/,
+      /Serper returned a malformed response/
     )
   })
 
   it("preserves transport errors", async () => {
     const transportError = new TypeError("network unavailable")
-    const fetcher: typeof fetch = async () => {
+    const fetcher = async () => {
       throw transportError
     }
 
     await assert.rejects(
       searchSerper({ q: "nextjs" }, { apiKey: "key", fetch: fetcher }),
-      (error: unknown) => error === transportError,
+      (error: unknown) => error === transportError
     )
   })
 })
