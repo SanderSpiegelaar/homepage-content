@@ -2,80 +2,42 @@
 
 ## Purpose
 
-Accept a research keyword, transform it into a focused query, and start an asynchronous Exa Agent research run.
+Accept a research keyword and persist it as a user-owned pending Exa research run without starting the external workflow.
 
 ## Requirements
 
 ### Requirement: Keyword research form
-
-The system SHALL provide authenticated dashboard users with a labeled form that accepts one research keyword and communicates submission progress.
+The system SHALL provide authenticated users with a labeled form on the Exa Research page that accepts one research keyword, creates a pending run, and communicates submission progress without starting the external workflow.
 
 #### Scenario: User views the research intake
-
-- **WHEN** an authenticated user opens the dashboard
-- **THEN** the system displays a labeled, required keyword input and a research submit control
+- **WHEN** an authenticated user opens the Exa Research page
+- **THEN** the system displays a labeled, required keyword input and a create-run control
 
 #### Scenario: Research submission is pending
-
-- **WHEN** a valid research submission is being processed
-- **THEN** the system disables repeat submission and communicates that processing is in progress
+- **WHEN** a valid research run is being created
+- **THEN** the system disables repeat submission and communicates that creation is in progress
 
 ### Requirement: Keyword validation
-
-The system MUST trim and server-validate the submitted keyword as a non-empty string no longer than 100 characters before invoking an external service.
+The system MUST trim and server-validate the submitted keyword as a non-empty string no longer than 100 characters before storing a run.
 
 #### Scenario: Blank keyword is submitted
-
 - **WHEN** the submitted keyword is empty or contains only whitespace
-- **THEN** the system returns a keyword validation message and does not call the LLM or Exa
+- **THEN** the system returns a keyword validation message and does not store a run or call n8n
 
 #### Scenario: Oversized keyword is submitted
-
 - **WHEN** the trimmed keyword exceeds 100 characters
-- **THEN** the system returns a keyword validation message and does not call the LLM or Exa
+- **THEN** the system returns a keyword validation message and does not store a run or call n8n
 
 ### Requirement: Submission authorization
-
-The system MUST verify the user's authenticated session within the server-side submission operation before invoking the LLM or Exa.
+The system MUST verify the user's authenticated session within the server-side submission operation before storing a run or invoking n8n.
 
 #### Scenario: Unauthenticated submission is attempted
-
 - **WHEN** a research submission is received without an authenticated session
-- **THEN** the system rejects the submission and does not call the LLM or Exa
+- **THEN** the system rejects the submission and does not store a run or call n8n
 
-### Requirement: Research query transformation
-
-The system SHALL use the Vercel AI SDK and a fixed research-query prompt to transform a valid keyword into one non-empty, self-contained natural-language query suitable for Exa Agent research.
-
-#### Scenario: Valid keyword is transformed
-
-- **WHEN** an authenticated user submits a valid keyword and the LLM succeeds
-- **THEN** the system produces one non-empty research query that incorporates the submitted topic
-
-#### Scenario: Query transformation fails
-
-- **WHEN** the LLM call fails or returns empty text
-- **THEN** the system reports that research could not be started and does not create an Exa Agent run
-
-### Requirement: Exa Agent run creation
-
-The system SHALL use the official `exa-js` SDK to create one asynchronous Exa Agent run using the generated research query.
-
-#### Scenario: Exa accepts the research query
-
-- **WHEN** a non-empty generated query is submitted successfully to Exa
-- **THEN** the system returns the generated query, Exa run identifier, and initial run status
-
-#### Scenario: Exa rejects the research query
-
-- **WHEN** Exa run creation fails
-- **THEN** the system reports that research could not be started without exposing credentials or internal provider details
-
-### Requirement: Research start acknowledgment
-
-The system SHALL present the successful start state to the user and make the generated query and Exa run identifier available for the next pipeline step.
+### Requirement: Research request acknowledgment
+The system SHALL acknowledge successful creation of a pending research run and make the new row available in the run history.
 
 #### Scenario: Run creation succeeds
-
-- **WHEN** Exa returns a newly created run
-- **THEN** the dashboard displays a research-started acknowledgment with the generated query and run identifier
+- **WHEN** the system stores a valid research run
+- **THEN** the Exa Research page confirms creation and displays the pending run in the table
