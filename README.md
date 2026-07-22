@@ -1,21 +1,19 @@
-# Next.js template
+# Homepage Content
 
-This is a Next.js template with shadcn/ui.
+Next.js application with Better Auth, Drizzle ORM, PostgreSQL, and shadcn/ui.
 
-## Adding components
-
-To add components to your app, run the following command:
+## Setup
 
 ```bash
-npx shadcn@latest add button
+bun install
+cp .env.example .env
 ```
 
-This will place the ui components in the `components` directory.
+Set `DATABASE_URL`, `BETTER_AUTH_URL`, and a random `BETTER_AUTH_SECRET` in `.env`, then run:
 
-## Using components
-
-To use the components in your app, import them as follows:
-
-```tsx
-import { Button } from "@/components/ui/button";
+```bash
+bun run db:migrate
+bun run dev
 ```
+
+Create new migrations after changing `lib/auth-schema.ts` with `bun run db:generate`.
