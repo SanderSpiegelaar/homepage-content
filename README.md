@@ -17,3 +17,14 @@ bun run dev
 ```
 
 Create new migrations after changing `lib/auth-schema.ts` with `bun run db:generate`.
+
+## Email
+
+Transactional email uses [Emailit](https://emailit.com/) over SMTP. Add these server-only variables to `.env`:
+
+```bash
+EMAILIT_API_KEY=your-emailit-api-key
+EMAIL_FROM="Your App <mail@your-verified-domain.example>"
+```
+
+Create and verify the `EMAIL_FROM` sending domain in Emailit before sending mail.
