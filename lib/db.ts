@@ -1,18 +1,12 @@
 import "server-only"
 
-import { mkdirSync } from "node:fs"
-import { dirname } from "node:path"
-import Database from "better-sqlite3"
-import { drizzle } from "drizzle-orm/better-sqlite3"
+import { drizzle } from "drizzle-orm/node-postgres"
+import { Pool } from "pg"
 
 import * as schema from "@/lib/auth-schema"
 
-const databaseUrl = process.env.DATABASE_URL
+if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required")
 
-if (!databaseUrl) throw new Error("DATABASE_URL is required")
+const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 
-mkdirSync(dirname(databaseUrl), { recursive: true })
-
-const client = new Database(databaseUrl)
-
-export const db = drizzle({ client, schema })
+export const db = drizzle({ client: pool, schema })
