@@ -1,5 +1,6 @@
 import { ClockCounterClockwiseIcon } from "@phosphor-icons/react/dist/ssr"
 import { headers } from "next/headers"
+import Link from "next/link"
 import { redirect } from "next/navigation"
 
 import { ResearchForm } from "@/components/research/research-form"
@@ -41,6 +42,7 @@ const statusVariant = {
   starting: "outline",
   started: "default",
   failed: "destructive",
+  completed: "default",
 } as const
 
 export default async function ExaResearchPage() {
@@ -95,7 +97,14 @@ export default async function ExaResearchPage() {
               <TableBody>
                 {runs.map((run) => (
                   <TableRow key={run.id}>
-                    <TableCell className="font-medium">{run.keyword}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link
+                        href={`/exa-research/${run.id}`}
+                        className="hover:underline"
+                      >
+                        {run.keyword}
+                      </Link>
+                    </TableCell>
                     <TableCell>
                       <div className="flex flex-col items-start gap-1">
                         <Badge variant={statusVariant[run.status]}>

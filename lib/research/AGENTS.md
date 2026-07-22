@@ -2,13 +2,14 @@
 
 ## Purpose
 
-Own research request validation, persisted run lifecycle, and server-side n8n dispatch.
+Own research request validation, persisted run and result lifecycles, and server-side n8n integration.
 
 ## Ownership
 
 - `research.ts` owns framework-independent request orchestration.
-- `runs.ts` and `schema.ts` own user-scoped persistence and lifecycle transitions.
-- `n8n.ts` owns the Effect-based HTTPS webhook boundary, typed dispatch failures, local dependency layer, Promise adapter, development request/response logging, and request/response schemas.
+- `runs.ts` and `schema.ts` own user-scoped persistence, result storage, payload schemas, and lifecycle transitions.
+- `n8n.ts` owns the Effect-based outbound HTTPS webhook boundary, typed dispatch failures, local dependency layer, Promise adapter, development request/response logging, and request/response schemas.
+- `ingestion.ts` owns callback authentication, validation, safe responses, and persistence orchestration.
 
 ## Local Contracts
 
@@ -18,6 +19,8 @@ Own research request validation, persisted run lifecycle, and server-side n8n di
 - Never expose webhook URLs, response bodies, or internal errors in the UI.
 - Development n8n logs use the run ID for correlation, omit authorization data and raw webhook URLs, and do not alter error propagation.
 - Prevent duplicate dispatch by atomically claiming only `pending` or `failed` runs.
+- Accept one validated result per known run, persist it with the `completed` transition atomically, and never replace it on callback retry.
+- Scope details reads to the authenticated owner; callback writes authenticate with the server-only shared secret instead of a user session.
 - Keep expected n8n failures in the Effect error channel, unexpected faults as defects, and the public dispatcher Promise-compatible.
 
 ## Work Guidance
