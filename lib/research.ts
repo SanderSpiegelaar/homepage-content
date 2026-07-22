@@ -3,14 +3,25 @@ export type ResearchActionState =
   | { status: "error"; message: string; fieldError?: string }
   | { status: "success"; message: string }
 
-type ResearchDependencies = {
-  dispatch: (keyword: string) => Promise<void>
+type CreateDependencies = {
+  create: (keyword: string) => Promise<void>
+  logError?: (error: unknown) => void
+}
+
+type StartDependencies = {
+  claim: (
+    userId: string,
+    id: string
+  ) => Promise<{ id: string; keyword: string } | undefined>
+  dispatch: (keyword: string) => Promise<string>
+  complete: (userId: string, id: string, executionId: string) => Promise<void>
+  fail: (userId: string, id: string) => Promise<void>
   logError?: (error: unknown) => void
 }
 
 export async function createResearchRequest(
   value: FormDataEntryValue | null,
-  { dispatch, logError = console.error }: ResearchDependencies
+  { create, logError = console.error }: CreateDependencies
 ): Promise<ResearchActionState> {
   const keyword = typeof value === "string" ? value.trim() : ""
 
@@ -23,13 +34,43 @@ export async function createResearchRequest(
   }
 
   try {
-    await dispatch(keyword)
-    return { status: "success", message: "Research request submitted." }
+    await create(keyword)
+    return { status: "success", message: "Research run created." }
   } catch (error) {
     logError(error)
     return {
       status: "error",
-      message: "Research could not be submitted. Please try again.",
+      message: "Research run could not be created. Please try again.",
     }
+  }
+}
+
+export async function startResearchRequest(
+  userId: string,
+  id: string,
+  {
+    claim,
+    dispatch,
+    complete,
+    fail,
+    logError = console.error,
+  }: StartDependencies
+): Promise<void> {
+  const run = await claim(userId, id)
+  if (!run) return
+
+  let executionId: string
+  try {
+    executionId = await dispatch(run.keyword)
+  } catch (error) {
+    logError(error)
+    await fail(userId, run.id)
+    return
+  }
+
+  try {
+    await complete(userId, run.id, executionId)
+  } catch (error) {
+    logError(error)
   }
 }
