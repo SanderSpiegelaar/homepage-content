@@ -1,0 +1,169 @@
+{
+  "runId": "de6d3525",
+  "agent": "reviewer",
+  "task": "Review the new Orca section in /Users/s.spiegelaar/Code/Web/homepage-content/AGENTS.md for factual accuracy, command correctness, and internal consistency against the installed version-matched guides /tmp/orca-cli-guide.txt and /tmp/orca-orchestration-guide.txt and extracted official docs in /tmp/orca-pages/*.txt. Do not edit files. Report only concrete inaccuracies, risky omissions, or unnecessary complexity; say PASS if none.",
+  "exitCode": 1,
+  "usage": {
+    "input": 22474,
+    "output": 1366,
+    "cacheRead": 42496,
+    "cacheWrite": 0,
+    "cost": 0.349196,
+    "turns": 4
+  },
+  "model": "openai-codex-fast/gpt-5.6-sol:low",
+  "attemptedModels": [
+    "openai-codex-fast/gpt-5.6-sol:low"
+  ],
+  "modelAttempts": [
+    {
+      "model": "openai-codex-fast/gpt-5.6-sol:low",
+      "success": true,
+      "exitCode": 0,
+      "usage": {
+        "input": 22474,
+        "output": 1366,
+        "cacheRead": 42496,
+        "cacheWrite": 0,
+        "cost": 0.349196,
+        "turns": 4
+      }
+    }
+  ],
+  "durationMs": 27488,
+  "toolCount": 9,
+  "error": "Acceptance rejected: no-staged-files evidence missing from child report.",
+  "acceptance": {
+    "status": "rejected",
+    "explicit": true,
+    "effectiveAcceptance": {
+      "level": "checked",
+      "explicit": true,
+      "inferredReason": [
+        "read-only/reviewer-style agent"
+      ],
+      "criteria": [
+        {
+          "id": "criterion-1",
+          "must": "Return concrete findings with file paths and severity when applicable",
+          "evidence": [
+            "changed-files",
+            "tests-added",
+            "commands-run",
+            "residual-risks",
+            "no-staged-files"
+          ],
+          "severity": "required"
+        }
+      ],
+      "evidence": [
+        "changed-files",
+        "tests-added",
+        "commands-run",
+        "residual-risks",
+        "no-staged-files"
+      ],
+      "verify": [],
+      "stopRules": []
+    },
+    "inferredReason": [
+      "read-only/reviewer-style agent"
+    ],
+    "criteria": [
+      {
+        "id": "criterion-1",
+        "must": "Return concrete findings with file paths and severity when applicable",
+        "evidence": [
+          "changed-files",
+          "tests-added",
+          "commands-run",
+          "residual-risks",
+          "no-staged-files"
+        ],
+        "severity": "required"
+      }
+    ],
+    "runtimeChecks": [
+      {
+        "id": "criterion:criterion-1",
+        "status": "passed",
+        "message": "Required criterion 'criterion-1' satisfied."
+      },
+      {
+        "id": "evidence:changed-files",
+        "status": "not-applicable",
+        "message": "changed-files evidence explicitly reported as not applicable."
+      },
+      {
+        "id": "evidence:tests-added",
+        "status": "not-applicable",
+        "message": "tests-added evidence explicitly reported as not applicable."
+      },
+      {
+        "id": "evidence:commands-run",
+        "status": "passed",
+        "message": "commands-run evidence present."
+      },
+      {
+        "id": "evidence:residual-risks",
+        "status": "passed",
+        "message": "residual-risks evidence present."
+      },
+      {
+        "id": "evidence:no-staged-files",
+        "status": "failed",
+        "message": "no-staged-files evidence missing from child report."
+      },
+      {
+        "id": "no-staged-files",
+        "status": "failed",
+        "message": "Staged files present: A  .env.example, M  .gitignore"
+      }
+    ],
+    "verifyRuns": [],
+    "childReport": {
+      "criteriaSatisfied": [
+        {
+          "id": "criterion-1",
+          "status": "satisfied",
+          "evidence": "Two concrete medium-severity findings cite AGENTS.md lines 21 and 29-41, corroborated by /tmp/orca-cli-guide.txt lines 28-33."
+        }
+      ],
+      "changedFiles": [],
+      "testsAddedOrUpdated": [],
+      "commandsRun": [
+        {
+          "command": "Read AGENTS.md, /tmp/orca-cli-guide.txt, /tmp/orca-orchestration-guide.txt, and search /tmp/orca-pages/*.txt",
+          "result": "passed",
+          "summary": "Compared the new section against installed guides and extracted official documentation."
+        },
+        {
+          "command": "git status --short && git diff -- AGENTS.md && git diff --cached --name-only",
+          "result": "passed",
+          "summary": "Inspected the Orca-section diff and found existing staged files."
+        },
+        {
+          "command": "git diff --check -- AGENTS.md",
+          "result": "passed",
+          "summary": "No whitespace errors."
+        }
+      ],
+      "validationOutput": [
+        "Installed guide conditions orca-dev usage on ORCA_DEV_REPO_ROOT.",
+        "Official examples invoke subcommands through the selected Orca executable."
+      ],
+      "residualRisks": [
+        "The review was documentation-only; commands were verified against version-matched guides rather than executed against a live Orca runtime."
+      ],
+      "noStagedFiles": false,
+      "diffSummary": "Reviewed the added AGENTS.md Orca guidance without editing files.",
+      "reviewFindings": [
+        "medium: AGENTS.md:21 - orca-dev selection omits the required ORCA_DEV_REPO_ROOT session condition.",
+        "medium: AGENTS.md:29-41 - command examples omit the resolved Orca executable prefix and are not directly runnable."
+      ],
+      "manualNotes": "Existing staged files: .env.example and .gitignore."
+    }
+  },
+  "transcriptPath": "/Users/s.spiegelaar/Code/Web/homepage-content/.pi-subagents/artifacts/de6d3525_reviewer_0_transcript.jsonl",
+  "timestamp": 1784713867961
+}
