@@ -128,4 +128,10 @@ When the user requests a durable behavior change, record it here or in the relev
 
 ## Child DOX Index
 
-This project is not yet indexed. Before continuing you must scan the project, build the DOX tree and replace this message with the actual index. Go deep and scan files recursively to properly evaluate complexity and create nested DOX files where needed.
+- [`app/AGENTS.md`](app/AGENTS.md): Next.js routes, layouts, route handlers, and Server Actions.
+- [`components/AGENTS.md`](components/AGENTS.md): reusable feature components and protected shadcn/ui primitives.
+- [`drizzle/AGENTS.md`](drizzle/AGENTS.md): generated SQL migrations and metadata.
+- [`lib/AGENTS.md`](lib/AGENTS.md): shared domain modules, with child contracts for auth, database, email, and research.
+- [`openspec/AGENTS.md`](openspec/AGENTS.md): canonical specs, active changes, and archived change records.
+
+Root-owned files include project configuration, environment examples, shared hooks, and static assets.
