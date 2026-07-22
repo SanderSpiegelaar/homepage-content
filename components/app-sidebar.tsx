@@ -1,6 +1,10 @@
 "use client"
 
-import { HouseIcon, UserCircleIcon } from "@phosphor-icons/react"
+import {
+  HouseIcon,
+  SlidersHorizontalIcon,
+  UserCircleIcon,
+} from "@phosphor-icons/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -19,6 +23,7 @@ import {
 
 const navigation = [
   { title: "Dashboard", href: "/", icon: HouseIcon },
+  { title: "AI Config", href: "/ai-config", icon: SlidersHorizontalIcon },
   { title: "Account", href: "/account", icon: UserCircleIcon },
 ]
 

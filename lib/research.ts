@@ -8,6 +8,34 @@ export type ResearchActionState =
       runStatus: string
     }
 
+type ResearchQueryConfig = {
+  model: string
+  instructions: string
+  promptTemplate: string
+}
+
+type ConfiguredQueryDependencies = {
+  loadConfig: () => Promise<ResearchQueryConfig>
+  renderPrompt: (template: string, keyword: string) => string
+  generate: (options: {
+    model: string
+    instructions: string
+    prompt: string
+  }) => Promise<string>
+}
+
+export async function generateConfiguredResearchQuery(
+  keyword: string,
+  { loadConfig, renderPrompt, generate }: ConfiguredQueryDependencies
+) {
+  const config = await loadConfig()
+  return generate({
+    model: config.model,
+    instructions: config.instructions,
+    prompt: renderPrompt(config.promptTemplate, keyword),
+  })
+}
+
 type ResearchDependencies = {
   generateQuery: (keyword: string) => Promise<string>
   createRun: (query: string) => Promise<{ id: string; status: string }>

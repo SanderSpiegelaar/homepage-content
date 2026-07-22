@@ -1,8 +1,52 @@
 import { expect, mock, test } from "bun:test"
 
-import { startResearch } from "./research"
+import { generateConfiguredResearchQuery, startResearch } from "./research"
 
 const silent = () => {}
+
+test("passes stored model and prompts to query generation", async () => {
+  const generate = mock(async () => "Configured research query")
+
+  const result = await generateConfiguredResearchQuery("edge AI", {
+    loadConfig: async () => ({
+      model: "provider/configured-model",
+      instructions: "Configured instructions",
+      promptTemplate: "Topic: {{keyword}}",
+    }),
+    renderPrompt: (template, keyword) =>
+      template.replace("{{keyword}}", JSON.stringify(keyword)),
+    generate,
+  })
+
+  expect(result).toBe("Configured research query")
+  expect(generate).toHaveBeenCalledWith({
+    model: "provider/configured-model",
+    instructions: "Configured instructions",
+    prompt: 'Topic: "edge AI"',
+  })
+})
+
+test("missing configuration prevents AI and Exa calls", async () => {
+  const generate = mock(async () => "unused")
+  const createRun = mock(async () => ({ id: "unused", status: "queued" }))
+
+  const result = await startResearch("edge AI", {
+    generateQuery: (keyword) =>
+      generateConfiguredResearchQuery(keyword, {
+        loadConfig: async () => {
+          throw new Error("missing configuration")
+        },
+        renderPrompt: () => "unused",
+        generate,
+      }),
+    createRun,
+    logError: silent,
+  })
+
+  expect(result.status).toBe("error")
+  expect(generate).not.toHaveBeenCalled()
+  expect(createRun).not.toHaveBeenCalled()
+})
 
 test("rejects invalid keywords before external calls", async () => {
   const generateQuery = mock(async () => "unused")

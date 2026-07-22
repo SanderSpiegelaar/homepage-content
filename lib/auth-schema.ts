@@ -56,6 +56,18 @@ export const account = pgTable(
   (table) => [index("account_userId_idx").on(table.userId)]
 )
 
+export const aiConfig = pgTable("ai_config", {
+  key: text("key").primaryKey(),
+  label: text("label").notNull(),
+  model: text("model").notNull(),
+  instructions: text("instructions").notNull(),
+  promptTemplate: text("prompt_template").notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+})
+
 export const verification = pgTable(
   "verification",
   {
