@@ -1,0 +1,12 @@
+.git
+.next
+node_modules
+.env*
+.repos
+graphify-out
+.fallow
+coverage
+*.tsbuildinfo
+.scripts
+.pi
+.pi-subagents

@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["bun"]
+
+[phases.install]
+cmds = ["bun ci"]
+cacheDirectories = ["/root/.bun/install/cache"]
+onlyIncludeFiles = ["package.json", "bun.lock", "scripts/prepare-effect.sh"]
+
+[phases.build]
+cmds = ["bun run --bun build"]
+cacheDirectories = [".next/cache", "node_modules/.cache", "tsconfig.tsbuildinfo"]
+
+[start]
+cmd = "bun run --bun start"
