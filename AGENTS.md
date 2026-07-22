@@ -12,6 +12,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Use Better Auth for all authentication and authorization functionality.
 - Send workflow requests to n8n webhooks; do not add provider-specific AI or search SDKs to this application.
 
+# Project Tooling
+
+- Use Oxlint via `bun run lint` and Oxfmt via `bun run format`; do not add ESLint or Prettier configuration.
+
 # Orca CLI and multi-agent work
 
 Official references: [CLI overview](https://www.onorca.dev/docs/cli/overview), [CLI reference](https://www.onorca.dev/docs/cli/reference), and [orchestration](https://www.onorca.dev/docs/cli/orchestration).

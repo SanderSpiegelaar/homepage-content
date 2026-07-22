@@ -18,26 +18,37 @@ The system SHALL provide authenticated users with a labeled form on the Exa Rese
 - **THEN** the system disables repeat submission and communicates that creation is in progress
 
 ### Requirement: Keyword validation
-The system MUST trim and server-validate the submitted keyword as a non-empty string no longer than 100 characters before storing a run.
+The system MUST trim and server-validate the submitted keyword as a non-empty string no longer than 100 characters before invoking the n8n webhook.
 
 #### Scenario: Blank keyword is submitted
 - **WHEN** the submitted keyword is empty or contains only whitespace
-- **THEN** the system returns a keyword validation message and does not store a run or call n8n
+- **THEN** the system returns a keyword validation message and does not call n8n
 
 #### Scenario: Oversized keyword is submitted
 - **WHEN** the trimmed keyword exceeds 100 characters
-- **THEN** the system returns a keyword validation message and does not store a run or call n8n
+- **THEN** the system returns a keyword validation message and does not call n8n
 
 ### Requirement: Submission authorization
-The system MUST verify the user's authenticated session within the server-side submission operation before storing a run or invoking n8n.
+The system MUST verify the user's authenticated session within the server-side submission operation before invoking the n8n webhook.
 
 #### Scenario: Unauthenticated submission is attempted
 - **WHEN** a research submission is received without an authenticated session
-- **THEN** the system rejects the submission and does not store a run or call n8n
+- **THEN** the system rejects the submission and does not call n8n
 
-### Requirement: Research request acknowledgment
-The system SHALL acknowledge successful creation of a pending research run and make the new row available in the run history.
+### Requirement: Research start acknowledgment
+The system SHALL present a provider-neutral acknowledgment after n8n accepts a research request.
 
-#### Scenario: Run creation succeeds
-- **WHEN** the system stores a valid research run
-- **THEN** the Exa Research page confirms creation and displays the pending run in the table
+#### Scenario: Request submission succeeds
+- **WHEN** n8n accepts a valid research request
+- **THEN** the dashboard displays that the research request was submitted without displaying generated query or provider run metadata
+
+### Requirement: Research query transformation
+The system SHALL load the `research-query` model, instructions, and prompt template from database-backed AI configuration and use them with the Vercel AI SDK to transform a valid keyword into one non-empty, self-contained natural-language query suitable for Exa Agent research. The system MUST render the submitted keyword into the template's `{{keyword}}` token as JSON-encoded data.
+
+#### Scenario: Valid keyword is transformed
+- **WHEN** an authenticated user submits a valid keyword, the `research-query` configuration exists, and the LLM succeeds
+- **THEN** the system invokes the configured model with the configured prompts and produces one non-empty research query that incorporates the submitted topic
+
+#### Scenario: Query transformation fails
+- **WHEN** configuration loading or the LLM call fails, or the LLM returns empty text
+- **THEN** the system reports that research could not be started and does not create an Exa Agent run

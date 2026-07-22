@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { describe, it, mock } from "bun:test"
 
-import type { N8nFetch } from "./n8n"
+import type { N8nFetch, N8nLogger } from "./n8n"
 
 mock.module("server-only", () => ({}))
 const { dispatchResearchRequest } = await import("./n8n")
@@ -36,6 +36,89 @@ describe("dispatchResearchRequest", () => {
     assert.equal(executionId, "execution-1")
   })
 
+  it("logs correlated request and response records", async () => {
+    const records: Array<{
+      level: "info" | "error"
+      bindings: Record<string, unknown>
+      message?: string
+    }> = []
+    const logger: N8nLogger = {
+      info: (bindings, message) =>
+        records.push({ level: "info", bindings, message }),
+      error: (bindings, message) =>
+        records.push({ level: "error", bindings, message }),
+    }
+
+    await dispatchResearchRequest("run-1", "edge AI", {
+      fetch: async () =>
+        Response.json({ success: true, executionId: "execution-1" }),
+      logger,
+    })
+
+    assert.equal(records.length, 2)
+    assert.deepEqual(records[0]?.bindings, {
+      event: "n8n.request",
+      correlationId: "run-1",
+      workflow: "exa-agent-research",
+      method: "POST",
+      request: { body: { id: "run-1", keyword: "edge AI" } },
+    })
+    assert.equal(records[1]?.bindings.event, "n8n.response")
+    assert.equal(records[1]?.bindings.correlationId, "run-1")
+    assert.deepEqual(records[1]?.bindings.response, {
+      status: 200,
+      body: { success: true, executionId: "execution-1" },
+    })
+    assert.equal(typeof records[1]?.bindings.elapsedMs, "number")
+    assert.equal(JSON.stringify(records).includes("authorization"), false)
+    assert.equal(JSON.stringify(records).includes("https://"), false)
+  })
+
+  it("logs timeout failures and preserves the original error", async () => {
+    const errors: Record<string, unknown>[] = []
+    const logger: N8nLogger = {
+      info: () => {},
+      error: (bindings) => errors.push(bindings),
+    }
+    const timeout = new DOMException("timed out", "TimeoutError")
+
+    await assert.rejects(
+      dispatchResearchRequest("run-1", "topic", {
+        fetch: async () => {
+          throw timeout
+        },
+        logger,
+      }),
+      (error: unknown) => error === timeout
+    )
+
+    assert.equal(errors.length, 1)
+    assert.equal(errors[0]?.event, "n8n.error")
+    assert.equal(errors[0]?.correlationId, "run-1")
+    assert.equal(errors[0]?.failureCategory, "timeout")
+    assert.equal(errors[0]?.err, timeout)
+  })
+
+  it("rejects invalid outgoing payloads before fetching", async () => {
+    let calls = 0
+    const fetcher: N8nFetch = async () => {
+      calls++
+      return new Response()
+    }
+
+    for (const [id, keyword] of [
+      ["", "topic"],
+      ["run-1", "   "],
+    ]) {
+      await assert.rejects(
+        dispatchResearchRequest(id, keyword, { fetch: fetcher }),
+        /request is invalid/
+      )
+    }
+
+    assert.equal(calls, 0)
+  })
+
   it("rejects non-HTTPS overrides before fetching", async () => {
     let calls = 0
     const fetcher: N8nFetch = async () => {
@@ -59,6 +142,7 @@ describe("dispatchResearchRequest", () => {
       Response.json({ success: false, executionId: "execution-1" }),
       Response.json({ success: true }),
       Response.json({ success: true, executionId: "   " }),
+      new Response("not json"),
     ]
 
     for (const response of responses) {
