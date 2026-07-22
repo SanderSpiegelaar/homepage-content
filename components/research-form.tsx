@@ -34,10 +34,9 @@ export function ResearchForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Start research</CardTitle>
+        <CardTitle>Submit research</CardTitle>
         <CardDescription>
-          Enter a topic and we&apos;ll turn it into a focused web research
-          query.
+          Enter a topic to send to the research workflow.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -62,28 +61,20 @@ export function ResearchForm() {
             </Field>
 
             <Button type="submit" disabled={pending}>
-              {pending ? "Starting research…" : "Start research"}
+              {pending ? "Submitting research…" : "Submit research"}
             </Button>
 
             {state.status === "error" && !fieldError && (
               <Alert variant="destructive">
-                <AlertTitle>Unable to start research</AlertTitle>
+                <AlertTitle>Unable to submit research</AlertTitle>
                 <AlertDescription>{state.message}</AlertDescription>
               </Alert>
             )}
 
             {state.status === "success" && (
               <Alert role="status">
-                <AlertTitle>Research started</AlertTitle>
-                <AlertDescription>
-                  <p>{state.query}</p>
-                  <p>
-                    <strong>Run ID:</strong> <code>{state.runId}</code>
-                  </p>
-                  <p>
-                    <strong>Status:</strong> {state.runStatus}
-                  </p>
-                </AlertDescription>
+                <AlertTitle>Research submitted</AlertTitle>
+                <AlertDescription>{state.message}</AlertDescription>
               </Alert>
             )}
           </FieldGroup>

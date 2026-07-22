@@ -6,7 +6,7 @@ export default function Page() {
       <div>
         <h2 className="text-lg font-medium">Research</h2>
         <p className="text-sm text-muted-foreground">
-          Start a new AI-assisted research run.
+          Submit a topic to the research workflow.
         </p>
       </div>
       <ResearchForm />

@@ -9,7 +9,7 @@ bun install
 cp .env.example .env
 ```
 
-Set `DATABASE_URL`, `BETTER_AUTH_URL`, and a random `BETTER_AUTH_SECRET` in `.env`, then run:
+Set `DATABASE_URL`, `BETTER_AUTH_URL`, a random `BETTER_AUTH_SECRET`, and the server-only `N8N_RESEARCH_WEBHOOK_BASE_URL` in `.env`, then run:
 
 ```bash
 bun run db:migrate

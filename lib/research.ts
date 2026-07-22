@@ -1,50 +1,16 @@
 export type ResearchActionState =
   | { status: "idle" }
   | { status: "error"; message: string; fieldError?: string }
-  | {
-      status: "success"
-      query: string
-      runId: string
-      runStatus: string
-    }
-
-type ResearchQueryConfig = {
-  model: string
-  instructions: string
-  promptTemplate: string
-}
-
-type ConfiguredQueryDependencies = {
-  loadConfig: () => Promise<ResearchQueryConfig>
-  renderPrompt: (template: string, keyword: string) => string
-  generate: (options: {
-    model: string
-    instructions: string
-    prompt: string
-  }) => Promise<string>
-}
-
-export async function generateConfiguredResearchQuery(
-  keyword: string,
-  { loadConfig, renderPrompt, generate }: ConfiguredQueryDependencies
-) {
-  const config = await loadConfig()
-  return generate({
-    model: config.model,
-    instructions: config.instructions,
-    prompt: renderPrompt(config.promptTemplate, keyword),
-  })
-}
+  | { status: "success"; message: string }
 
 type ResearchDependencies = {
-  generateQuery: (keyword: string) => Promise<string>
-  createRun: (query: string) => Promise<{ id: string; status: string }>
+  dispatch: (keyword: string) => Promise<void>
   logError?: (error: unknown) => void
 }
 
-export async function startResearch(
+export async function createResearchRequest(
   value: FormDataEntryValue | null,
-  { generateQuery, createRun, logError = console.error }: ResearchDependencies
+  { dispatch, logError = console.error }: ResearchDependencies
 ): Promise<ResearchActionState> {
   const keyword = typeof value === "string" ? value.trim() : ""
 
@@ -57,21 +23,13 @@ export async function startResearch(
   }
 
   try {
-    const query = (await generateQuery(keyword)).trim()
-    if (!query) throw new Error("The model returned an empty research query")
-
-    const run = await createRun(query)
-    return {
-      status: "success",
-      query,
-      runId: run.id,
-      runStatus: run.status,
-    }
+    await dispatch(keyword)
+    return { status: "success", message: "Research request submitted." }
   } catch (error) {
     logError(error)
     return {
       status: "error",
-      message: "Research could not be started. Please try again.",
+      message: "Research could not be submitted. Please try again.",
     }
   }
 }

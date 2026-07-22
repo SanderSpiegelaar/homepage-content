@@ -8,8 +8,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 - Use shadcn/ui for frontend components.
 - Use Better Auth for all authentication and authorization functionality.
-- When integrating Exa, Firecrawl, or DataForSEO, use their official JavaScript/TypeScript SDKs rather than custom API wrappers.
-- Use the Vercel AI SDK for all other AI-related functionality.
+- Send workflow requests to n8n webhooks; do not add provider-specific AI or search SDKs to this application.
 
 # Orca CLI and multi-agent work
 

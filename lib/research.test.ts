@@ -1,110 +1,72 @@
 import { expect, mock, test } from "bun:test"
 
-import { generateConfiguredResearchQuery, startResearch } from "./research"
+let session: object | null = { user: { id: "user-1" } }
+const getSession = mock(async () => session)
+const dispatchResearchRequest = mock(async () => {})
 
-const silent = () => {}
+mock.module("next/headers", () => ({ headers: async () => new Headers() }))
+mock.module("@/lib/auth", () => ({ auth: { api: { getSession } } }))
+mock.module("@/lib/n8n", () => ({ dispatchResearchRequest }))
 
-test("passes stored model and prompts to query generation", async () => {
-  const generate = mock(async () => "Configured research query")
+const { submitResearch } = await import("../app/(dashboard)/actions")
+const idle = { status: "idle" } as const
 
-  const result = await generateConfiguredResearchQuery("edge AI", {
-    loadConfig: async () => ({
-      model: "provider/configured-model",
-      instructions: "Configured instructions",
-      promptTemplate: "Topic: {{keyword}}",
-    }),
-    renderPrompt: (template, keyword) =>
-      template.replace("{{keyword}}", JSON.stringify(keyword)),
-    generate,
+function form(keyword: string) {
+  const data = new FormData()
+  data.set("keyword", keyword)
+  return data
+}
+
+test("authorization and validation prevent webhook dispatch", async () => {
+  dispatchResearchRequest.mockClear()
+  session = null
+
+  expect(await submitResearch(idle, form("edge AI"))).toEqual({
+    status: "error",
+    message: "Sign in to submit research.",
   })
 
-  expect(result).toBe("Configured research query")
-  expect(generate).toHaveBeenCalledWith({
-    model: "provider/configured-model",
-    instructions: "Configured instructions",
-    prompt: 'Topic: "edge AI"',
-  })
-})
-
-test("missing configuration prevents AI and Exa calls", async () => {
-  const generate = mock(async () => "unused")
-  const createRun = mock(async () => ({ id: "unused", status: "queued" }))
-
-  const result = await startResearch("edge AI", {
-    generateQuery: (keyword) =>
-      generateConfiguredResearchQuery(keyword, {
-        loadConfig: async () => {
-          throw new Error("missing configuration")
-        },
-        renderPrompt: () => "unused",
-        generate,
-      }),
-    createRun,
-    logError: silent,
-  })
-
-  expect(result.status).toBe("error")
-  expect(generate).not.toHaveBeenCalled()
-  expect(createRun).not.toHaveBeenCalled()
-})
-
-test("rejects invalid keywords before external calls", async () => {
-  const generateQuery = mock(async () => "unused")
-  const createRun = mock(async () => ({ id: "unused", status: "queued" }))
-
+  session = { user: { id: "user-1" } }
   for (const keyword of ["   ", "x".repeat(101)]) {
-    const result = await startResearch(keyword, {
-      generateQuery,
-      createRun,
-      logError: silent,
-    })
+    const result = await submitResearch(idle, form(keyword))
     expect(result.status).toBe("error")
     expect(result).toHaveProperty("fieldError")
   }
 
-  expect(generateQuery).not.toHaveBeenCalled()
-  expect(createRun).not.toHaveBeenCalled()
+  expect(dispatchResearchRequest).not.toHaveBeenCalled()
 })
 
-test("does not start Exa when query generation fails", async () => {
-  const createRun = mock(async () => ({ id: "unused", status: "queued" }))
+test("successful submissions return a provider-neutral acknowledgment", async () => {
+  session = { user: { id: "user-1" } }
+  dispatchResearchRequest.mockClear()
 
-  const result = await startResearch("edge AI", {
-    generateQuery: async () => {
-      throw new Error("provider secret")
-    },
-    createRun,
-    logError: silent,
-  })
+  const result = await submitResearch(idle, form("  edge AI  "))
 
-  expect(result).toEqual({
-    status: "error",
-    message: "Research could not be started. Please try again.",
-  })
-  expect(JSON.stringify(result)).not.toContain("provider secret")
-  expect(createRun).not.toHaveBeenCalled()
-})
-
-test("hands the generated query to Exa and returns its run", async () => {
-  const createRun = mock(async (query: string) => {
-    expect(query).toBe("Research recent edge AI adoption and cite sources.")
-    return { id: "agent_run_123", status: "queued" }
-  })
-
-  const result = await startResearch("  edge AI  ", {
-    generateQuery: async (keyword) => {
-      expect(keyword).toBe("edge AI")
-      return " Research recent edge AI adoption and cite sources. "
-    },
-    createRun,
-    logError: silent,
-  })
-
+  expect(dispatchResearchRequest).toHaveBeenCalledWith("edge AI")
   expect(result).toEqual({
     status: "success",
-    query: "Research recent edge AI adoption and cite sources.",
-    runId: "agent_run_123",
-    runStatus: "queued",
+    message: "Research request submitted.",
   })
-  expect(createRun).toHaveBeenCalledTimes(1)
+  expect(result).not.toHaveProperty("query")
+  expect(result).not.toHaveProperty("runId")
+})
+
+test("webhook failures return a safe retryable error", async () => {
+  session = { user: { id: "user-1" } }
+  dispatchResearchRequest.mockImplementationOnce(async () => {
+    throw new Error("private webhook detail")
+  })
+  const log = console.error
+  console.error = mock(() => {})
+
+  try {
+    const result = await submitResearch(idle, form("edge AI"))
+    expect(result).toEqual({
+      status: "error",
+      message: "Research could not be submitted. Please try again.",
+    })
+    expect(JSON.stringify(result)).not.toContain("private webhook detail")
+  } finally {
+    console.error = log
+  }
 })
