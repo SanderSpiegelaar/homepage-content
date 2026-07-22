@@ -1,5 +1,8 @@
 import "server-only"
 
+const EXA_RESEARCH_WEBHOOK =
+  "https://n8n.office.vinden.nl/webhook/ace/v2/exa-agent-research"
+
 export type N8nFetch = (
   input: RequestInfo | URL,
   init?: RequestInit
@@ -14,23 +17,32 @@ type Options = {
 export async function dispatchResearchRequest(
   keyword: string,
   options: Options = {}
-) {
-  let url: URL
-  try {
-    url = new URL(
-      options.url ?? process.env.N8N_RESEARCH_WEBHOOK_BASE_URL ?? ""
-    )
-    if (url.protocol !== "https:") throw new Error()
-  } catch {
-    throw new Error("N8N_RESEARCH_WEBHOOK_BASE_URL must be a valid HTTPS URL")
-  }
+): Promise<string> {
+  const url = new URL(options.url ?? EXA_RESEARCH_WEBHOOK)
+  if (url.protocol !== "https:")
+    throw new Error("n8n webhook URL must use HTTPS")
 
   const response = await (options.fetch ?? fetch)(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ type: "research", keyword }),
+    body: JSON.stringify({ keyword }),
     signal: AbortSignal.timeout(options.timeoutMs ?? 10_000),
   })
 
   if (!response.ok) throw new Error("n8n webhook request failed")
+
+  const result: unknown = await response.json()
+  if (
+    typeof result !== "object" ||
+    result === null ||
+    !("success" in result) ||
+    result.success !== true ||
+    !("executionId" in result) ||
+    typeof result.executionId !== "string" ||
+    !result.executionId.trim()
+  ) {
+    throw new Error("n8n webhook returned an invalid response")
+  }
+
+  return result.executionId.trim()
 }
