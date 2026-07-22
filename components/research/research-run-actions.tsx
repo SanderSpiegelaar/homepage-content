@@ -14,12 +14,14 @@ import {
 } from "@/components/ui/dropdown-menu"
 type Props = {
   id: string
-  status: "pending" | "starting" | "started" | "failed"
+  status: "pending" | "starting" | "started" | "failed" | "completed"
 }
+
+const startableStatuses = new Set<Props["status"]>(["pending", "failed"])
 
 export function ResearchRunActions({ id, status }: Props) {
   const [pending, startTransition] = useTransition()
-  const canStart = status === "pending" || status === "failed"
+  const canStart = startableStatuses.has(status)
 
   return (
     <DropdownMenu>
@@ -40,7 +42,7 @@ export function ResearchRunActions({ id, status }: Props) {
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
           <DropdownMenuItem
-            disabled={!canStart || pending}
+            disabled={[!canStart, pending].includes(true)}
             onClick={() => startTransition(() => startResearch(id))}
           >
             <PlayIcon />

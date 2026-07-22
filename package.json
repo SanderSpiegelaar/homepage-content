@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "fallow": "fallow audit",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "prepare": "./scripts/prepare-effect.sh"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

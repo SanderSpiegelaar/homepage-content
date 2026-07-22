@@ -16,6 +16,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 - Use Oxlint via `bun run lint` and Oxfmt via `bun run format`; do not add ESLint or Prettier configuration.
 - After implementing changes, agents must run `bun run fallow` and resolve any issues introduced by their changes.
+- `bun run prepare` bootstraps the ignored local Effect source checkout at `.repos/effect` when it is missing.
 
 # Orca CLI and multi-agent work
 
