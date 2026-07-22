@@ -2,8 +2,8 @@ import { ClockCounterClockwiseIcon } from "@phosphor-icons/react/dist/ssr"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
-import { ResearchForm } from "@/components/research-form"
-import { ResearchRunActions } from "@/components/research-run-actions"
+import { ResearchForm } from "@/components/research/research-form"
+import { ResearchRunActions } from "@/components/research/research-run-actions"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -28,8 +28,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { auth } from "@/lib/auth"
-import { listResearchRuns } from "@/lib/research-runs"
+import { auth } from "@/lib/auth/auth"
+import { listResearchRuns } from "@/lib/research/runs"
 
 const dateTime = new Intl.DateTimeFormat("en", {
   dateStyle: "medium",

@@ -2,7 +2,7 @@ import "server-only"
 
 import { and, desc, eq, inArray } from "drizzle-orm"
 
-import { exaResearchRun } from "@/lib/auth-schema"
+import { exaResearchRun } from "@/lib/research/schema"
 import { db } from "@/lib/db"
 
 export type ExaResearchRun = typeof exaResearchRun.$inferSelect

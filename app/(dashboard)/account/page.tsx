@@ -1,7 +1,7 @@
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
-import { ChangePasswordForm } from "@/components/password-forms"
+import { ChangePasswordForm } from "@/components/auth/password-forms"
 import {
   Card,
   CardContent,
@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { auth } from "@/lib/auth"
+import { auth } from "@/lib/auth/auth"
 
 export default async function AccountPage() {
   const session = await auth.api.getSession({ headers: await headers() })

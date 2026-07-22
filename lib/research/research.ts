@@ -13,7 +13,7 @@ type StartDependencies = {
     userId: string,
     id: string
   ) => Promise<{ id: string; keyword: string } | undefined>
-  dispatch: (keyword: string) => Promise<string>
+  dispatch: (id: string, keyword: string) => Promise<string>
   complete: (userId: string, id: string, executionId: string) => Promise<void>
   fail: (userId: string, id: string) => Promise<void>
   logError?: (error: unknown) => void
@@ -61,7 +61,7 @@ export async function startResearchRequest(
 
   let executionId: string
   try {
-    executionId = await dispatch(run.keyword)
+    executionId = await dispatch(run.id, run.keyword)
   } catch (error) {
     logError(error)
     await fail(userId, run.id)

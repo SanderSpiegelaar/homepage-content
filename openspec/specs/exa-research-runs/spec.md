@@ -37,7 +37,7 @@ Each pending or failed run row SHALL provide an actions menu with a start action
 - **THEN** the system does not send another n8n request for that action
 
 ### Requirement: n8n research dispatch
-When a run is explicitly started, the system SHALL send a server-side POST request to `https://n8n.office.vinden.nl/webhook/ace/v2/exa-agent-research` with JSON body `{ "keyword": "<stored keyword>" }`. The system MUST treat only an HTTP-success response containing `success: true` and a non-empty `executionId` as a successful start.
+When a run is explicitly started, the system SHALL send a server-side POST request to `https://n8n.office.vinden.nl/webhook/ace/v2/exa-agent-research` with JSON body `{ "id": "<stored run ID>", "keyword": "<stored keyword>" }`, allowing n8n to include the persisted run ID in its callback. The system MUST treat only an HTTP-success response containing `success: true` and a non-empty `executionId` as a successful start.
 
 #### Scenario: n8n accepts a run
 - **WHEN** the start request receives an HTTP-success response with `success: true` and a non-empty `executionId`

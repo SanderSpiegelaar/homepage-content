@@ -7,14 +7,14 @@ mock.module("server-only", () => ({}))
 const { dispatchResearchRequest } = await import("./n8n")
 
 describe("dispatchResearchRequest", () => {
-  it("posts only the keyword and returns the execution id", async () => {
+  it("posts the database id and keyword and returns the execution id", async () => {
     let sent: { input: RequestInfo | URL; init?: RequestInit } | undefined
     const fetcher: N8nFetch = async (input, init) => {
       sent = { input, init }
       return Response.json({ success: true, executionId: "  execution-1  " })
     }
 
-    const executionId = await dispatchResearchRequest("edge AI", {
+    const executionId = await dispatchResearchRequest("run-1", "edge AI", {
       fetch: fetcher,
     })
 
@@ -28,7 +28,10 @@ describe("dispatchResearchRequest", () => {
       new Headers(sent.init?.headers).get("Content-Type"),
       "application/json"
     )
-    assert.equal(sent.init?.body, JSON.stringify({ keyword: "edge AI" }))
+    assert.equal(
+      sent.init?.body,
+      JSON.stringify({ id: "run-1", keyword: "edge AI" })
+    )
     assert.ok(sent.init?.signal instanceof AbortSignal)
     assert.equal(executionId, "execution-1")
   })
@@ -41,7 +44,7 @@ describe("dispatchResearchRequest", () => {
     }
 
     await assert.rejects(
-      dispatchResearchRequest("topic", {
+      dispatchResearchRequest("run-1", "topic", {
         url: "http://n8n.example/webhook",
         fetch: fetcher,
       }),
@@ -60,7 +63,7 @@ describe("dispatchResearchRequest", () => {
 
     for (const response of responses) {
       await assert.rejects(
-        dispatchResearchRequest("topic", {
+        dispatchResearchRequest("run-1", "topic", {
           fetch: async () => response,
         }),
         (error: unknown) => {
@@ -82,7 +85,10 @@ describe("dispatchResearchRequest", () => {
       })
 
     await assert.rejects(
-      dispatchResearchRequest("topic", { fetch: fetcher, timeoutMs: 1 }),
+      dispatchResearchRequest("run-1", "topic", {
+        fetch: fetcher,
+        timeoutMs: 1,
+      }),
       (error: unknown) => error instanceof DOMException
     )
   })

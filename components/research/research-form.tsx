@@ -20,7 +20,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import type { ResearchActionState } from "@/lib/research"
+import type { ResearchActionState } from "@/lib/research/research"
 
 const initialState: ResearchActionState = { status: "idle" }
 

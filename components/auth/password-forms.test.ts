@@ -18,7 +18,7 @@ const changePasswordApi = mock(async (): Promise<AuthResult> => ({
   error: null,
 }))
 
-mock.module("@/lib/auth-client", () => ({
+mock.module("@/lib/auth/client", () => ({
   authClient: {
     requestPasswordReset,
     resetPassword: resetPasswordApi,

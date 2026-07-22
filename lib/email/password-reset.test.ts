@@ -2,7 +2,7 @@ import { expect, mock, test } from "bun:test"
 
 mock.module("server-only", () => ({}))
 
-const { sendPasswordResetEmail } = await import("./password-reset-email")
+const { sendPasswordResetEmail } = await import("./password-reset")
 
 test("sends reset links and logs delivery failures", async () => {
   const send = mock(async () => undefined)

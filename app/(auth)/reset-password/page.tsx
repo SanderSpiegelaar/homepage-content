@@ -1,4 +1,4 @@
-import { ResetPasswordForm } from "@/components/password-forms"
+import { ResetPasswordForm } from "@/components/auth/password-forms"
 
 export default async function ResetPasswordPage({
   searchParams,

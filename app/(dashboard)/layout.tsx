@@ -1,14 +1,14 @@
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
-import { AppSidebar } from "@/components/app-sidebar"
-import { SignOutButton } from "@/components/sign-out-button"
+import { SignOutButton } from "@/components/auth/sign-out-button"
+import { AppSidebar } from "@/components/layout/app-sidebar"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { auth } from "@/lib/auth"
+import { auth } from "@/lib/auth/auth"
 
 export default async function DashboardLayout({
   children,

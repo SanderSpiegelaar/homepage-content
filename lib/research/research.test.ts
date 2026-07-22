@@ -14,9 +14,9 @@ const dispatchResearchRequest = mock(async () => "execution-1")
 
 mock.module("next/cache", () => ({ revalidatePath }))
 mock.module("next/headers", () => ({ headers: async () => new Headers() }))
-mock.module("@/lib/auth", () => ({ auth: { api: { getSession } } }))
-mock.module("@/lib/n8n", () => ({ dispatchResearchRequest }))
-mock.module("@/lib/research-runs", () => ({
+mock.module("@/lib/auth/auth", () => ({ auth: { api: { getSession } } }))
+mock.module("@/lib/research/n8n", () => ({ dispatchResearchRequest }))
+mock.module("@/lib/research/runs", () => ({
   claimResearchRun,
   completeResearchRun,
   createResearchRun,
@@ -24,7 +24,7 @@ mock.module("@/lib/research-runs", () => ({
 }))
 
 const { startResearch, submitResearch } =
-  await import("../app/(dashboard)/actions")
+  await import("../../app/(dashboard)/actions")
 const idle = { status: "idle" } as const
 
 function form(keyword: string) {
@@ -89,7 +89,7 @@ test("start scopes the claim to the owner and persists the execution id", async 
   await startResearch("run-1")
 
   expect(claimResearchRun).toHaveBeenCalledWith("user-1", "run-1")
-  expect(dispatchResearchRequest).toHaveBeenCalledWith("edge AI")
+  expect(dispatchResearchRequest).toHaveBeenCalledWith("run-1", "edge AI")
   expect(completeResearchRun).toHaveBeenCalledWith(
     "user-1",
     "run-1",

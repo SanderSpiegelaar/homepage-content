@@ -3,19 +3,19 @@
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 
-import { auth } from "@/lib/auth"
-import { dispatchResearchRequest } from "@/lib/n8n"
+import { auth } from "@/lib/auth/auth"
+import { dispatchResearchRequest } from "@/lib/research/n8n"
 import {
   claimResearchRun,
   completeResearchRun,
   createResearchRun,
   failResearchRun,
-} from "@/lib/research-runs"
+} from "@/lib/research/runs"
 import {
   createResearchRequest,
   startResearchRequest,
   type ResearchActionState,
-} from "@/lib/research"
+} from "@/lib/research/research"
 
 export async function submitResearch(
   _previousState: ResearchActionState,

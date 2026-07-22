@@ -16,7 +16,7 @@ bun run db:migrate
 bun run dev
 ```
 
-Create new migrations after changing `lib/auth-schema.ts` with `bun run db:generate`.
+Create new migrations after changing `lib/db/schema.ts` with `bun run db:generate`.
 
 ## Email
 

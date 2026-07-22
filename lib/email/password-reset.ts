@@ -1,6 +1,6 @@
 import "server-only"
 
-import { sendEmail, type SendEmailOptions } from "@/lib/email"
+import { sendEmail, type SendEmailOptions } from "@/lib/email/email"
 
 export async function sendPasswordResetEmail(
   email: string,

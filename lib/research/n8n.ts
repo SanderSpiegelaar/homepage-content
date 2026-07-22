@@ -15,6 +15,7 @@ type Options = {
 }
 
 export async function dispatchResearchRequest(
+  id: string,
   keyword: string,
   options: Options = {}
 ): Promise<string> {
@@ -25,7 +26,7 @@ export async function dispatchResearchRequest(
   const response = await (options.fetch ?? fetch)(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ keyword }),
+    body: JSON.stringify({ id, keyword }),
     signal: AbortSignal.timeout(options.timeoutMs ?? 10_000),
   })
 
