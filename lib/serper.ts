@@ -75,9 +75,14 @@ export type SerperSearchResponse = {
   [key: string]: unknown
 }
 
+export type SerperFetch = (
+  input: RequestInfo | URL,
+  init?: RequestInit
+) => Promise<Response>
+
 export type SerperSearchOptions = {
   apiKey?: string
-  fetch?: typeof fetch
+  fetch?: SerperFetch
 }
 
 const SERPER_SEARCH_URL = "https://google.serper.dev/search"
@@ -85,7 +90,7 @@ const SERPER_SEARCH_URL = "https://google.serper.dev/search"
 /** Searches Google through Serper from server-side code. */
 export async function searchSerper(
   request: SerperSearchRequest,
-  options: SerperSearchOptions = {},
+  options: SerperSearchOptions = {}
 ): Promise<SerperSearchResponse> {
   const apiKey = options.apiKey ?? process.env.SERPER_API_KEY
   if (!apiKey?.trim()) throw new Error("SERPER_API_KEY is required")
@@ -106,7 +111,7 @@ export async function searchSerper(
     throw new SerperError(
       `Serper request failed with status ${response.status}${details ? `: ${details}` : ""}`,
       response.status,
-      details || undefined,
+      details || undefined
     )
   }
 
@@ -125,7 +130,7 @@ export class SerperError extends Error {
   constructor(
     message: string,
     readonly status: number,
-    readonly details?: string,
+    readonly details?: string
   ) {
     super(message)
   }
