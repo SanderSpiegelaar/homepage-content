@@ -8,7 +8,7 @@ Own research request validation, persisted run lifecycle, and server-side n8n di
 
 - `research.ts` owns framework-independent request orchestration.
 - `runs.ts` and `schema.ts` own user-scoped persistence and lifecycle transitions.
-- `n8n.ts` owns the HTTPS webhook boundary, development request/response logging, and request/response schema validation.
+- `n8n.ts` owns the Effect-based HTTPS webhook boundary, typed dispatch failures, local dependency layer, Promise adapter, development request/response logging, and request/response schemas.
 
 ## Local Contracts
 
@@ -18,10 +18,12 @@ Own research request validation, persisted run lifecycle, and server-side n8n di
 - Never expose webhook URLs, response bodies, or internal errors in the UI.
 - Development n8n logs use the run ID for correlation, omit authorization data and raw webhook URLs, and do not alter error propagation.
 - Prevent duplicate dispatch by atomically claiming only `pending` or `failed` runs.
+- Keep expected n8n failures in the Effect error channel, unexpected faults as defects, and the public dispatcher Promise-compatible.
 
 ## Work Guidance
 
-- Keep fetch and logging injectable and retain a bounded timeout.
+- Provide fetch, logging, destination, and timeout through the local n8n Effect layer and retain a bounded timeout.
+- Do not retry webhook submission until n8n idempotency is guaranteed.
 - Fix response compatibility at the shared n8n boundary, not in individual callers.
 
 ## Verification

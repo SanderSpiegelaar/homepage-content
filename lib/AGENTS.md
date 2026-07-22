@@ -19,6 +19,7 @@ Own server and client domain logic shared by routes and components.
 - Keep trust-boundary validation and safe user-facing errors in domain logic.
 - Do not add provider-specific AI or search SDKs; workflow execution belongs to n8n.
 - Detailed integration request and response records are development-only and must redact credential-shaped fields.
+- Adopt Effect only for intentionally migrated server workflows; keep expected failures typed internally and retain Promise adapters for existing Promise-based callers.
 
 ## Work Guidance
 
