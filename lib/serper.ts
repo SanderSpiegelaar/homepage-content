@@ -75,9 +75,14 @@ export type SerperSearchResponse = {
   [key: string]: unknown
 }
 
+export type SerperFetch = (
+  input: RequestInfo | URL,
+  init?: RequestInit
+) => Promise<Response>
+
 export type SerperSearchOptions = {
   apiKey?: string
-  fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+  fetch?: SerperFetch
 }
 
 const SERPER_SEARCH_URL = "https://google.serper.dev/search"

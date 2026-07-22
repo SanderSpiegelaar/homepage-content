@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { after, beforeEach, describe, it } from "node:test"
 
-import { searchSerper, SerperError } from "./serper"
+import { searchSerper, SerperError, type SerperFetch } from "./serper"
 
 const originalApiKey = process.env.SERPER_API_KEY
 
@@ -15,7 +15,7 @@ describe("searchSerper", () => {
   it("sends typed searches with an explicit API key", async () => {
     let sentRequest:
       { input: RequestInfo | URL; init?: RequestInit } | undefined
-    const fetcher = async (input: RequestInfo | URL, init?: RequestInit) => {
+    const fetcher: SerperFetch = async (input, init) => {
       sentRequest = { input, init }
       return Response.json({ searchParameters: { q: "nextjs" } })
     }
@@ -47,7 +47,7 @@ describe("searchSerper", () => {
   it("uses SERPER_API_KEY when no explicit key is provided", async () => {
     process.env.SERPER_API_KEY = "environment-key"
     let sentKey: string | null = null
-    const fetcher = async (_input: RequestInfo | URL, init?: RequestInit) => {
+    const fetcher: SerperFetch = async (_input, init) => {
       sentKey = new Headers(init?.headers).get("X-API-KEY")
       return Response.json({})
     }
@@ -59,7 +59,7 @@ describe("searchSerper", () => {
 
   it("fails before fetching when configuration is missing", async () => {
     let called = false
-    const fetcher = async () => {
+    const fetcher: SerperFetch = async () => {
       called = true
       return Response.json({})
     }
@@ -72,7 +72,7 @@ describe("searchSerper", () => {
   })
 
   it("throws a safe SerperError for provider failures", async () => {
-    const fetcher = async () =>
+    const fetcher: SerperFetch = async () =>
       new Response("invalid key secret-key", { status: 401 })
 
     await assert.rejects(
@@ -88,7 +88,7 @@ describe("searchSerper", () => {
   })
 
   it("rejects successful non-object payloads", async () => {
-    const fetcher = async () => Response.json([])
+    const fetcher: SerperFetch = async () => Response.json([])
 
     await assert.rejects(
       searchSerper({ q: "nextjs" }, { apiKey: "key", fetch: fetcher }),
@@ -98,7 +98,7 @@ describe("searchSerper", () => {
 
   it("preserves transport errors", async () => {
     const transportError = new TypeError("network unavailable")
-    const fetcher = async () => {
+    const fetcher: SerperFetch = async () => {
       throw transportError
     }
 
